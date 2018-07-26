@@ -1,4 +1,5 @@
 var WebSocketClient = require('websocket').client;
+let ip = require("ip");
 
 var client = new WebSocketClient();
 
@@ -30,5 +31,5 @@ client.on('connect', function(connection) {
     sendNumber();
 });
 
-client.connect('ws://192.168.3.19:8001/object/frontdoor/send', '');
+client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
 

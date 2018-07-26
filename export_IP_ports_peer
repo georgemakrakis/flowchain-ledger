@@ -2,8 +2,8 @@
 echo Enter IP address of this node
 read DEVICE_IP
 echo "$DEVICE_IP - device ip."
-echo Enter port of this node
-read DEVICE_PORT
+#echo Enter port of this node
+DEVICE_PORT=8001
 echo "$DEVICE_PORT - device port."
 
 export HOST="${DEVICE_IP}"
@@ -13,8 +13,8 @@ echo Enter IP address of the boot node aka. the peer you want to connect to
 read BOOT_DEVICE_IP
 echo "$BOOT_DEVICE_IP - device ip."
 export HOST="${DEVICE_IP}"
-echo Enter port of this boot node
-read BOOT_DEVICE_PORT
+#echo Enter port of the boot node
+BOOT_DEVICE_PORT=8000
 echo "$BOOT_DEVICE_PORT - device port."
 
 export PEER_ADDR="${BOOT_DEVICE_IP}"
