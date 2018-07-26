@@ -1,5 +1,6 @@
 // Import the Flowchain library
 var Flowchain = require('../libs');
+var fs = require('fs');
 
 // Import Websocket server
 var server = Flowchain.WoTServer;
@@ -108,6 +109,13 @@ var onquery = function(req, res) {
 
         console.log('[Blockchain]', tx, 'is found at Block#' + block.no);
         //todo Here we must write the metrics to a file
+        fs.appendFile('data_received_boot', tx.temperature + ',' + Date.now() + '\n', function (err) {
+            if (err)
+            {
+                return console.log(err);
+            }
+        });
+        res.send(tx);
         res.send(tx);
     });
 };
@@ -134,6 +142,8 @@ BootNode.prototype.start = function(options) {
         onquery: onquery,
         ondata: ondata
     });
+
+    getFileReady();
 };
 
 if (typeof(module) != "undefined" && typeof(exports) != "undefined")
@@ -147,3 +157,18 @@ if (!module.parent)
         onquery: onquery,
         ondata: ondata
     });
+
+function getFileReady(){
+    fs.writeFile('data_received_boot', '', function (err) {
+        if (err)
+        {
+            return console.log(err);
+        }
+    });
+    fs.appendFile('data_received_boot', 'message_num,time_created' + '\n', function (err) {
+        if (err)
+        {
+            return console.log(err);
+        }
+    });
+}

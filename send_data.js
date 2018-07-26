@@ -1,5 +1,6 @@
 let WebSocketClient = require('websocket').client;
-let ip = require("ip");
+let ip = require('ip');
+let fs = require('fs')
 
 let client = new WebSocketClient();
 
@@ -16,6 +17,7 @@ client.on('connect', function(connection) {
         console.log('echo-protocol Connection Closed');
     });
 
+    getFileReady();
     let limit = 0;
     function sendNumber() {
         if (connection.connected && limit!==100) {
@@ -26,6 +28,13 @@ client.on('connect', function(connection) {
             console.log('[SEND]', JSON.stringify(obj));
 
             connection.sendUTF(JSON.stringify(obj));
+
+            fs.appendFile('data_send', obj.temperature + ',' + Date.now() + '\n', function (err) {
+                if (err)
+                {
+                    return console.log(err);
+                }
+            });
             limit++;
             setTimeout(sendNumber, 1000);
         }
@@ -39,6 +48,21 @@ client.on('connect', function(connection) {
 });
 
 client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
+
+function getFileReady(){
+    fs.writeFile('data_send', '', function (err) {
+        if (err)
+        {
+            return console.log(err);
+        }
+    });
+    fs.appendFile('data_send', 'message_num,time_created' + '\n', function (err) {
+        if (err)
+        {
+            return console.log(err);
+        }
+    });
+}
 
 
 
