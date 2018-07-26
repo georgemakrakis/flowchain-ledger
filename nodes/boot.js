@@ -57,7 +57,7 @@ var onmessage = function(req, res) {
         if (err)
             return console.log('Ooops! onmessage =', err) // some kind of I/O error
 
-        console.log('[Blockchain]', tx, 'is in Block#' + block.no, ', its data key =', key);        
+        console.log('[Blockchain]', tx, 'is in Block#' + block.no, ', its data key =', key);
 
         // fetch by key
         db.get(hash, function (err, value) {
@@ -70,7 +70,7 @@ var onmessage = function(req, res) {
 
             res.read(key);
         });
-      
+
     });
 };
 
@@ -107,6 +107,7 @@ var onquery = function(req, res) {
         };
 
         console.log('[Blockchain]', tx, 'is found at Block#' + block.no);
+        //todo Here we must write the metrics to a file
         res.send(tx);
     });
 };

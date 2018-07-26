@@ -1,5 +1,6 @@
 // Import the Flowchain library
 var Flowchain = require('../libs');
+var fs = require('fs');
 
 // Import Websocket server
 var server = Flowchain.WoTServer;
@@ -10,6 +11,7 @@ var crypto = Flowchain.Crypto;
 // Database
 var Database = Flowchain.DatabaseAdapter;
 var db = new Database('picodb');
+
 
 /**
  * The Application Layer
@@ -61,7 +63,7 @@ var onmessage = function(req, res) {
     db.put(hash, tx, function (err) {
         if (err)
             return console.log('Ooops! onmessage =', err) // some kind of I/O error
-        console.log('[Blockchain]', tx, 'is in Block#' + block.no, ', its data key =', key);                
+        console.log('[Blockchain]', tx, 'is in Block#' + block.no, ', its data key =', key);
 
         // fetch by key
         db.get(hash, function (err, value) {
@@ -74,7 +76,7 @@ var onmessage = function(req, res) {
 
             res.read(key);
         });
-      
+
     });
 };
 
@@ -111,9 +113,31 @@ var onquery = function(req, res) {
         };
 
         console.log('[Blockchain]', tx, 'is found at Block#' + block.no);
+        //todo Here we must write the metrics to a file
+        fs.appendFile('data_received', tx.temperature + ',' + Date.now() + '\n', function (err) {
+            if (err)
+            {
+                return console.log(err);
+            }
+        });
         res.send(tx);
     });
 };
+
+function getFileReady(){
+    fs.writeFile('data_received', '', function (err) {
+        if (err)
+        {
+            return console.log(err);
+        }
+    });
+    fs.appendFile('data_received', 'message_num,time_created' + '\n', function (err) {
+        if (err)
+        {
+            return console.log(err);
+        }
+    });
+}
 
 // Application event callbacks
 var ondata = function(req, res) {
@@ -141,7 +165,7 @@ PeerNode.prototype.submit = function(data) {
 /**
  * Create a Flowchain Ledger node
  *
- * @param {Object} options 
+ * @param {Object} options
  * @return {Object}
  * @api public
  */
@@ -165,6 +189,8 @@ PeerNode.prototype.start = function(options) {
             port: process.env['PEER_PORT'] || peerPort
         }
     });
+
+    getFileReady();
 };
 
 if (typeof(module) != "undefined" && typeof(exports) != "undefined")
