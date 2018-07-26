@@ -1,0 +1,11 @@
+#!/bin/bash
+echo Enter IP address of this node
+read DEVICE_IP
+echo "$DEVICE_IP - device ip."
+echo Enter port of this node
+read DEVICE_PORT
+echo "$DEVICE_PORT - device port."
+
+export HOST="${DEVICE_IP}"
+export PORT="${DEVICE_PORT}"
+node boot.js
