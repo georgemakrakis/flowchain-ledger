@@ -116,7 +116,6 @@ var onquery = function(req, res) {
             }
         });
         res.send(tx);
-        res.send(tx);
     });
 };
 

@@ -20,7 +20,7 @@ client.on('connect', function(connection) {
     getFileReady();
     let limit = 0;
     function sendNumber() {
-        if (connection.connected && limit!==100) {
+        if (connection.connected && limit!==10) {
             let number = Math.round(Math.random() * 0xFFFFFF);
             let lucky = Math.round(Math.random() * 100 + 1);
             let obj = {temperature: lucky};
@@ -38,7 +38,7 @@ client.on('connect', function(connection) {
             limit++;
             setTimeout(sendNumber, 1000);
         }
-        else if(limit===100)
+        else if(limit===10)
         {
             connection.close();
         }
@@ -47,7 +47,8 @@ client.on('connect', function(connection) {
     sendNumber();
 });
 
-client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
+//client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
+client.connect('ws://192.168.1.2:8001/object/frontdoor/send', '');
 
 function getFileReady(){
     fs.writeFile('data_send', '', function (err) {
