@@ -8,4 +8,4 @@ echo "$DEVICE_PORT - device port."
 
 export HOST="${DEVICE_IP}"
 export PORT="${DEVICE_PORT}"
-node boot.js
+node nodes/responseTime/boot.js

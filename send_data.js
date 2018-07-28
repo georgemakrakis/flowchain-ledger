@@ -47,8 +47,8 @@ client.on('connect', function(connection) {
     sendNumber();
 });
 
-//client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
-client.connect('ws://192.168.1.2:8001/object/frontdoor/send', '');
+client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
+//client.connect('ws://192.168.1.2:8001/object/frontdoor/send', '');
 
 function getFileReady(){
     fs.writeFile('data_send', '', function (err) {

@@ -1,5 +1,6 @@
 // Import the Flowchain library
-var Flowchain = require('../libs');
+var Flowchain = require('../../libs');
+var fs = require('fs');
 
 // Import Websocket server
 var server = Flowchain.WoTServer;
@@ -15,10 +16,7 @@ var db = new Database('picodb');
  * The Application Layer
  */
 
-/**
- * Application event callbacks.
- * I am the successor node of the data.
- */
+// Application event callbacks
 var onmessage = function(req, res) {
     var payload = req.payload;
     var block = req.block;
@@ -53,10 +51,17 @@ var onmessage = function(req, res) {
     // Give out the asset
     //res.send(asset);
 
+    // Establish a linked data description
+    var device = {
+        '@context': [
+            'http://w3c.github.io/wot/w3c-wot-td-contxt.jsonld'
+        ],
+        'name': '',
+    };
+
     db.put(hash, tx, function (err) {
         if (err)
             return console.log('Ooops! onmessage =', err) // some kind of I/O error
-
         console.log('[Blockchain]', tx, 'is in Block#' + block.no, ', its data key =', key);
 
         // fetch by key
@@ -107,14 +112,18 @@ var onquery = function(req, res) {
         };
 
         console.log('[Blockchain]', tx, 'is found at Block#' + block.no);
+        //todo Here we must write the metrics to a file
+        fs.appendFile('data_received_peer', tx.temperature + ',' + Date.now() + '\n', function (err) {
+            if (err)
+            {
+                return console.log(err);
+            }
+        });
         res.send(tx);
     });
 };
 
-/**
- * Application event callbacks.
- * Forward the data over the Chord ring.
- */
+// Application event callbacks
 var ondata = function(req, res) {
     var data = req.data;
     var put = res.save;
@@ -122,21 +131,54 @@ var ondata = function(req, res) {
     put(data);
 };
 
-function BootNode() {
+function PeerNode() {
     this.server = server;
 }
 
-BootNode.prototype.start = function(options) {
+/**
+ * Submit a transaction to the Flowchain p2p network
+ *
+ * @param {Object} data
+ * @return {Object}
+ * @api public
+ */
+PeerNode.prototype.submit = function(data) {
+    this.server.save(data);
+}
+
+/**
+ * Create a Flowchain Ledger node
+ *
+ * @param {Object} options
+ * @return {Object}
+ * @api public
+ */
+PeerNode.prototype.start = function(options) {
+    var peerAddr = 'localhost';
+    var peerPort = '8000';
+    if (!options) options = {};
+
+    if (options.join) {
+        peerAddr = options.join.address || peerAddr;
+        peerPort = options.join.port || peerPort;
+    }
+
     this.server.start({
-        onstart: onstart,
-        onmessage: onmessage,
-        onquery: onquery,
-        ondata: ondata
+        onstart: options.onstart || onstart,
+        onmessage: options.onmessage || onmessage,
+        onquery: options.onquery || onquery,
+        ondata: options.ondata || ondata,
+        join: {
+            address: process.env['PEER_ADDR'] || peerAddr,
+            port: process.env['PEER_PORT'] || peerPort
+        }
     });
+
+    getFileReady();
 };
 
 if (typeof(module) != "undefined" && typeof(exports) != "undefined")
-    module.exports = BootNode;
+    module.exports = PeerNode;
 
 // Start the server
 if (!module.parent)
@@ -144,5 +186,24 @@ if (!module.parent)
         onstart: onstart,
         onmessage: onmessage,
         onquery: onquery,
-        ondata: ondata
+        ondata: ondata,
+        join: {
+            address: process.env['PEER_ADDR'] || 'localhost',
+            port: process.env['PEER_PORT'] || '8000'
+        }
     });
+
+function getFileReady(){
+    fs.writeFile('data_received_peer', '', function (err) {
+        if (err)
+        {
+            return console.log(err);
+        }
+    });
+    fs.appendFile('data_received_peer', 'message_num,time_created' + '\n', function (err) {
+        if (err)
+        {
+            return console.log(err);
+        }
+    });
+}

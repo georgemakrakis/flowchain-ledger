@@ -19,4 +19,4 @@ echo "$BOOT_DEVICE_PORT - device port."
 
 export PEER_ADDR="${BOOT_DEVICE_IP}"
 export PEER_PORT="${BOOT_DEVICE_PORT}"
-node peer.js
+node nodes/serviceTime_RTT/peer.js
