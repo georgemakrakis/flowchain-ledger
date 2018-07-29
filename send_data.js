@@ -28,7 +28,7 @@ client.on('connect', function(connection) {
         {
             let number = Math.round(Math.random() * 0xFFFFFF);
             let lucky = Math.round(Math.random() * 100 + 1);
-            let obj = {temperature: lucky, timestamp: Date.now()};
+            let obj = {temperature: lucky, timestampSend: Date.now()};
 
             console.log('[SEND]', JSON.stringify(obj));
 

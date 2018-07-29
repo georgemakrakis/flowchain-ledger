@@ -87,6 +87,39 @@ var onmessage = function (req, res) {
     // console.log('111111111111111111111111111111', tx);
     // console.log('222222222222222222222222222222', data.from);
 
+    //Resend the Data as part of RTT implementation
+
+    console.log('+++++++RESEND DATA++++++++++');
+
+    hash = crypto.createHmac('sha256', block.hash)
+        .update(key)
+        .digest('hex');
+
+    var tx2 = {temperature: tx.temperature, timestampSend:tx.timestampSend, timestampReSend: Date.now()};
+
+    db.put(hash, tx2, function (err) {
+        if (err)
+        {
+            return console.log('Ooops! onmessage =', err)
+        } // some kind of I/O error
+        console.log('[Blockchain]', tx, 'is in Block#' + block.no, ', its data key =', key);
+
+        // fetch by key
+        db.get(hash, function (err, value) {
+            console.log('[Database] get err =', err);
+
+            if (err)
+            {
+                return console.log('Ooops! onmessage =', err)
+            } // likely the key was not found
+
+            console.log('[Blockchain] verifying tx =', key);
+
+            res.read(key);
+        });
+
+    });
+
 
 };
 
