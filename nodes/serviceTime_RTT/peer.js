@@ -1,5 +1,5 @@
 // Import the Flowchain library
-var Flowchain = require('../libs');
+var Flowchain = require('../../libs');
 
 // Import Websocket server
 var server = Flowchain.WoTServer;
@@ -16,7 +16,7 @@ var db = new Database('picodb');
  */
 
 // Application event callbacks
-var onmessage = function(req, res) {
+var onmessage = function (req, res) {
     var payload = req.payload;
     var block = req.block;
     var node = req.node;
@@ -31,14 +31,15 @@ var onmessage = function(req, res) {
     var tx = message.data;
 
     // Get a block
-    if (!block) {
+    if (!block)
+    {
         console.log('[Blockchain] no usable block now, data is ignored.');
         return;
     }
 
     // Block hash as the secret and data key as the context
     var hash = crypto.createHmac('sha256', block.hash)
-        .update( key )
+        .update(key)
         .digest('hex');
 
     // Generate an asset
@@ -60,7 +61,9 @@ var onmessage = function(req, res) {
 
     db.put(hash, tx, function (err) {
         if (err)
-            return console.log('Ooops! onmessage =', err) // some kind of I/O error
+        {
+            return console.log('Ooops! onmessage =', err)
+        } // some kind of I/O error
         console.log('[Blockchain]', tx, 'is in Block#' + block.no, ', its data key =', key);
 
         // fetch by key
@@ -68,7 +71,9 @@ var onmessage = function(req, res) {
             console.log('[Database] get err =', err);
 
             if (err)
-                return console.log('Ooops! onmessage =', err) // likely the key was not found
+            {
+                return console.log('Ooops! onmessage =', err)
+            } // likely the key was not found
 
             console.log('[Blockchain] verifying tx =', key);
 
@@ -76,32 +81,44 @@ var onmessage = function(req, res) {
         });
 
     });
+
+    //todo On message make a resend the message to the node that made the call
+    //todo make the call of put again so to push data on Chord with the new timestamp
+    // console.log('111111111111111111111111111111', tx);
+    // console.log('222222222222222222222222222222', data.from);
+
+
 };
 
 // Application event callbacks
-var onstart = function(req, res) {
+var onstart = function (req, res) {
     // Chord node ID
     var id = req.node.id;
     var address = req.node.address;
 };
 
 // Application event callbacks
-var onquery = function(req, res) {
+var onquery = function (req, res) {
     var tx = req.tx;
     var block = req.block;
 
     console.log('[Blockchain] verified tx =', tx);
 
-    if (!block) return;
+    if (!block)
+    {
+        return;
+    }
 
     // Block hash as the secret and data key as the context
     var hash = crypto.createHmac('sha256', block.hash)
-        .update( tx.key )
+        .update(tx.key)
         .digest('hex');
 
     db.get(hash, function (err, value) {
         if (err)
-            return console.log('Ooops! onmessage =', err) // likely the key was not found
+        {
+            return console.log('Ooops! onmessage =', err)
+        } // likely the key was not found
 
         var tx = value[0].tx;
 
@@ -116,14 +133,15 @@ var onquery = function(req, res) {
 };
 
 // Application event callbacks
-var ondata = function(req, res) {
+var ondata = function (req, res) {
     var data = req.data;
     var put = res.save;
 
     put(data);
 };
 
-function PeerNode() {
+function PeerNode()
+{
     this.server = server;
 }
 
@@ -134,7 +152,7 @@ function PeerNode() {
  * @return {Object}
  * @api public
  */
-PeerNode.prototype.submit = function(data) {
+PeerNode.prototype.submit = function (data) {
     this.server.save(data);
 }
 
@@ -145,12 +163,16 @@ PeerNode.prototype.submit = function(data) {
  * @return {Object}
  * @api public
  */
-PeerNode.prototype.start = function(options) {
+PeerNode.prototype.start = function (options) {
     var peerAddr = 'localhost';
     var peerPort = '8000';
-    if (!options) options = {};
+    if (!options)
+    {
+        options = {};
+    }
 
-    if (options.join) {
+    if (options.join)
+    {
         peerAddr = options.join.address || peerAddr;
         peerPort = options.join.port || peerPort;
     }
@@ -168,10 +190,13 @@ PeerNode.prototype.start = function(options) {
 };
 
 if (typeof(module) != "undefined" && typeof(exports) != "undefined")
+{
     module.exports = PeerNode;
+}
 
 // Start the server
 if (!module.parent)
+{
     server.start({
         onstart: onstart,
         onmessage: onmessage,
@@ -182,3 +207,4 @@ if (!module.parent)
             port: process.env['PEER_PORT'] || '8000'
         }
     });
+}

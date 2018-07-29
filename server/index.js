@@ -49,9 +49,9 @@ var ChordUtils = require('../p2p/libs/utils');
  * Web of Things Framework
  */
 var Framework = require('../wot/framework')
-  , WebsocketBroker = require('../wot/broker')
-  , WebsocketRouter = require('../wot/router')
-  , WebsocketRequestHandlers = require('../wot/requestHandlers');
+    , WebsocketBroker = require('../wot/broker')
+    , WebsocketRouter = require('../wot/router')
+    , WebsocketRequestHandlers = require('../wot/requestHandlers');
 
 /**
  * Util Modules
@@ -84,11 +84,11 @@ var bft = new BFT;
  * WebSocket URL Router
  */
 var wsHandlers = {
-   "/object/([A-Za-z0-9-]+)/viewer": WebsocketRequestHandlers.viewer,
-   "/object/([A-Za-z0-9-]+)/status": WebsocketRequestHandlers.status,
-   "/object/([A-Za-z0-9-]+)/send": WebsocketRequestHandlers.send,
+    "/object/([A-Za-z0-9-]+)/viewer": WebsocketRequestHandlers.viewer,
+    "/object/([A-Za-z0-9-]+)/status": WebsocketRequestHandlers.status,
+    "/object/([A-Za-z0-9-]+)/send": WebsocketRequestHandlers.send,
 
-   "/node/([A-Za-z0-9-]+)/receive": WebsocketRequestHandlers.receive
+    "/node/([A-Za-z0-9-]+)/receive": WebsocketRequestHandlers.receive
 };
 
 /*
@@ -97,163 +97,163 @@ var wsHandlers = {
  * @param {Object} Chord server
  */
 function Server() {
-  this.port = process.env.PORT || 8000;
-  this.host = process.env.HOST || 'localhost';
-  this.endpoint = process.env.ENDPOINT || null;
-  this.thingid = process.env.THINGID || '5550937980d51931b3000009';
-  this.server = null;
+    this.port = process.env.PORT || 8000;
+    this.host = process.env.HOST || 'localhost';
+    this.endpoint = process.env.ENDPOINT || null;
+    this.thingid = process.env.THINGID || '5550937980d51931b3000009';
+    this.server = null;
 
-  // initialize the public attributes
-  this.nodes = {};
+    // initialize the public attributes
+    this.nodes = {};
 
-  // initialize the private attributes
-  this._options = {}
+    // initialize the private attributes
+    this._options = {}
 
-  // Websocket connection of endpoint
-  this.endpointConnection = null;
+    // Websocket connection of endpoint
+    this.endpointConnection = null;
 
-  /*
-   * Create a unique ID for the new node.
-   *
-   *  1. The ID of the node can be hashed by IP address.
-   *  2. Hased by URI at this project.
-   */
-  if (process.env.ENV === 'development')
-    var id = ChordUtils.hashTestId(process.env.ID);
-  else
-    var id = ChordUtils.hash(uuid.v4());
+    /*
+     * Create a unique ID for the new node.
+     *
+     *  1. The ID of the node can be hashed by IP address.
+     *  2. Hased by URI at this project.
+     */
+    if (process.env.ENV === 'development')
+        var id = ChordUtils.hashTestId(process.env.ID);
+    else
+        var id = ChordUtils.hash(uuid.v4());
 
-  // Create a new Chord node with the ID
-  var node = new Node(id, this);
+    // Create a new Chord node with the ID
+    var node = new Node(id, this);
 
-  // The Node instances
-  this.node = this.nodes[id] = node;
-  this.last_node = id;
+    // The Node instances
+    this.node = this.nodes[id] = node;
+    this.last_node = id;
 
-  // Create a new miner
-  this.miner = new Miner();
-  this._miner_id = 0;
+    // Create a new miner
+    this.miner = new Miner();
+    this._miner_id = 0;
 
-  // Blocks
-  this.blockchain = [];
+    // Blocks
+    this.blockchain = [];
 };
 
 /**
  * The server event handlers
  */
 Server.prototype.onData = function(payload) {
-  // Parse the data received from Chord node (WebSocket client)
-  var packet = typeof payload.data === 'object' ? payload.data : deserialize(payload.data);
+    // Parse the data received from Chord node (WebSocket client)
+    var packet = typeof payload.data === 'object' ? payload.data : deserialize(payload.data);
 
-  // Request URI
-  var pathname = payload.pathname;
+    // Request URI
+    var pathname = payload.pathname;
 
-  if (typeof packet.message === 'undefined'
+    if (typeof packet.message === 'undefined'
         || typeof packet.message.type === 'undefined') {
-    // Not a chord message
-    if (typeof this._options.ondata === 'function') {
-        var req = {
-          node: {}
-        };
-        var res = {
-          save: function() {},
-          read: function() {}
-        };
+        // Not a chord message
+        if (typeof this._options.ondata === 'function') {
+            var req = {
+                node: {}
+            };
+            var res = {
+                save: function() {},
+                read: function() {}
+            };
 
-        req.node = this.node;
-        req.data = packet;
-        res.save = this.save.bind(this);
-        res.read = this.read.bind(this);
+            req.node = this.node;
+            req.data = packet;
+            res.save = this.save.bind(this);
+            res.read = this.read.bind(this);
 
-        return this._options.ondata(req, res);
+            return this._options.ondata(req, res);
+        }
     }
-  }
 
-  /*
-   * Format of 'packet'.
-   *
-   *  { message: { type: 0, id: '77c44c4f7bd4044129babdf235d943ff25a1d5f0' },
-   *  from: { id: '77c44c4f7bd4044129babdf235d943ff25a1d5f0' } }
-   */
+    /*
+     * Format of 'packet'.
+     *
+     *  { message: { type: 0, id: '77c44c4f7bd4044129babdf235d943ff25a1d5f0' },
+     *  from: { id: '77c44c4f7bd4044129babdf235d943ff25a1d5f0' } }
+     */
 
-  // Get last node's instance by ID
-  var to = this.nodes[this.last_node];
+    // Get last node's instance by ID
+    var to = this.nodes[this.last_node];
 
-  // Forward the message
-  if (packet.to) {
-    // Forward this message to the node ID
-    to = this.nodes[packet.to];
-  }
+    // Forward the message
+    if (packet.to) {
+        // Forward this message to the node ID
+        to = this.nodes[packet.to];
+    }
 
-  var tx = {};
+    var tx = {};
 
-  if (typeof packet.message.data !== 'undefined') {
-    tx = packet.message.data;
-  }
+    if (typeof packet.message.data !== 'undefined') {
+        tx = packet.message.data;
+    }
 
-  // This message is for me to query data of my blocks
-  if (typeof this._options.onquery === 'function'
+    // This message is for me to query data of my blocks
+    if (typeof this._options.onquery === 'function'
         && typeof tx !== 'undefined'
         && typeof tx.origin !== 'undefined'
         && packet.message.type === Chord.MESSAGE) {
-    var req = {
-      node: {}
-    };
-    var res = {
-      save: function() {},
-      read: function() {},
-      send: function() {}
-    };
+        var req = {
+            node: {}
+        };
+        var res = {
+            save: function() {},
+            read: function() {},
+            send: function() {}
+        };
 
-    req.node = this.node;
-    req.payload = payload;
-    req.block = this.blockchain[this.blockchain.length - 1];
-    req.tx = tx;
+        req.node = this.node;
+        req.payload = payload;
+        req.block = this.blockchain[this.blockchain.length - 1];
+        req.tx = tx;
 
-    res.save = this.save.bind(this);
-    res.read = this.read.bind(this);
-    res.send = this.sendAsset.bind(this);
+        res.save = this.save.bind(this);
+        res.read = this.read.bind(this);
+        res.send = this.sendAsset.bind(this);
 
-    return this._options.onquery(req, res);
+        return this._options.onquery(req, res);
 
-  // The message is for me
-  } else if (typeof this._options.onmessage === 'function'
+        // The message is for me
+    } else if (typeof this._options.onmessage === 'function'
         && packet.message.type === Chord.MESSAGE) {
-    var req = {
-      node: {}
-    };
-    var res = {
-      save: function() {},
-      read: function() {},
-      send: function() {}
-    };
+        var req = {
+            node: {}
+        };
+        var res = {
+            save: function() {},
+            read: function() {},
+            send: function() {}
+        };
 
-    req.node = this.node;
-    req.payload = payload;
-    req.block = this.blockchain[this.blockchain.length - 1];
+        req.node = this.node;
+        req.payload = payload;
+        req.block = this.blockchain[this.blockchain.length - 1];
 
-    res.save = this.save.bind(this);
-    res.read = this.read.bind(this);
-    res.send = this.sendAsset.bind(this);
+        res.save = this.save.bind(this);
+        res.read = this.read.bind(this);
+        res.send = this.sendAsset.bind(this);
 
-    return this._options.onmessage(req, res);
-  }
+        return this._options.onmessage(req, res);
+    }
 
-  // Get node instance by ID and dispatch the message
-  if (to) {
-    to.dispatch(packet.from, packet.message);
-  }
+    // Get node instance by ID and dispatch the message
+    if (to) {
+        to.dispatch(packet.from, packet.message);
+    }
 };
 
 /**
  * Web of things framework event handlers
  */
 Server.prototype.onNewThing = function(thing) {
-  if (Debug.Verbose)
-    console.info('onNewThing:', thing);
+    if (Debug.Verbose)
+        console.info('onNewThing:', thing);
 
-  // Invoke framework API to register new thing
-  this.registerThing(thing);
+    // Invoke framework API to register new thing
+    this.registerThing(thing);
 };
 
 /**
@@ -264,84 +264,84 @@ Server.prototype.onNewThing = function(thing) {
  * @api public
  */
 Server.prototype.start = function(options) {
-  var self = this;
-  var options = options || {};
+    var self = this;
+    var options = options || {};
 
-  for (var prop in options) {
-    if (options.hasOwnProperty(prop)
-        && typeof(this._options[prop]) === 'undefined')
-      this._options[prop] = options[prop];
-  }
+    for (var prop in options) {
+        if (options.hasOwnProperty(prop)
+            && typeof(this._options[prop]) === 'undefined')
+            this._options[prop] = options[prop];
+    }
 
-  // Prepare to start Websocket server
-  var server = new WebsocketBroker({
-    port: this.port,
-    host: this.host
-  });
+    // Prepare to start Websocket server
+    var server = new WebsocketBroker({
+        port: this.port,
+        host: this.host
+    });
 
-  var router = new WebsocketRouter();
+    var router = new WebsocketRouter();
 
-  // Websocket server events (the protocol layer)
-  server.on('data', this.onData.bind(this));
+    // Websocket server events (the protocol layer)
+    server.on('data', this.onData.bind(this));
 
-  // Web of things framework event aggregation (the things layer)
-  server.on('newThing', this.onNewThing.bind(this));
+    // Web of things framework event aggregation (the things layer)
+    server.on('newThing', this.onNewThing.bind(this));
 
-  // Connect to a subsequent Chord node
-  if (typeof options.join === 'object') {
-    this.node.join(options.join);
-  }
+    // Connect to a subsequent Chord node
+    if (typeof options.join === 'object') {
+        this.node.join(options.join);
+    }
 
-  server.start(router.route, wsHandlers);
+    server.start(router.route, wsHandlers);
 
-  this.server = server;
+    this.server = server;
 
-  console.log('----- Genesis Block -----');
-  console.log( JSON.stringify(block) );
+    console.log('----- Genesis Block -----');
+    console.log( JSON.stringify(block) );
 
-  console.log('----- Start mining -----');
-  var miner = this.miner;
+    console.log('----- Start mining -----');
+    var miner = this.miner;
 
-  miner.setTransactions([this.node]);
-  miner.setPreviousBlock(block);
+    miner.setTransactions([this.node]);
+    miner.setPreviousBlock(block);
 
-  // Start to generate a hash
-  this._miner_id = setInterval(function() {
-      miner.generateHash();
+    // Start to generate a hash
+    this._miner_id = setInterval(function() {
+        miner.generateHash();
 
-      // A success hash is generated
-      if (miner.isSuccess()) {
-          var block = miner.getNewBlock();
+        // A success hash is generated
+        if (miner.isSuccess()) {
+            var block = miner.getNewBlock();
 
-          // Successful mined and save the new block
-          self.blockchain.push(block);
+            // Successful mined and save the new block
+            self.blockchain.push(block);
 
-          miner.setPreviousBlock(block);
+            miner.setPreviousBlock(block);
 
-          console.log('Difficulty: ' + block.difficulty)
-          console.log('Block #' + block.no + ': ' + block.hash);
-      } else {
-          var block = miner.getMiningBlock();
-          //console.log('current difficulty = ' + block.difficulty)
-      }
-  }, 50);
+            console.log('Difficulty: ' + block.difficulty)
+            console.log('Block #' + block.no + ': ' + block.hash);
+        } else {
+            var block = miner.getMiningBlock();
+            //console.log('current difficulty = ' + block.difficulty)
+        }
+    }, 50);
 
-  // Event callbacks
-  if (typeof this._options.onstart === 'function') {
-    var req = {
-      node: {}
-    };
-    var res = {
-      save: function() {},
-      read: function() {}
-    };
+    // Event callbacks
+    if (typeof this._options.onstart === 'function') {
+        var req = {
+            node: {}
+        };
+        var res = {
+            save: function() {},
+            read: function() {}
+        };
 
-    req.node = this.node;
-    res.save = this.save.bind(this);
-    res.read = this.read.bind(this);
+        req.node = this.node;
+        res.save = this.save.bind(this);
+        res.read = this.read.bind(this);
 
-    this._options.onstart(req, res);
-  }
+        this._options.onstart(req, res);
+    }
 };
 
 /**
@@ -352,10 +352,10 @@ Server.prototype.start = function(options) {
  * @api public
  */
 Server.prototype.shutdown = function(cb) {
-  clearInterval(this._miner_id);
-  this.node.clearIntervals();
-  if (this.server)
-    this.server.shutdown(cb);
+    clearInterval(this._miner_id);
+    this.node.clearIntervals();
+    if (this.server)
+        this.server.shutdown(cb);
 }
 
 /*
@@ -365,7 +365,7 @@ Server.prototype.shutdown = function(cb) {
  * @param {Object} { type: 2, id: 'b283326930a8b2baded20bb1cf5b6358' }
  */
 Server.prototype.save = function(data) {
-  return this.node.save(data);
+    return this.node.save(data);
 };
 
 /*
@@ -374,7 +374,7 @@ Server.prototype.save = function(data) {
  * @param key {String} -
  */
 Server.prototype.read = function(key) {
-  return this.node.read(key);
+    return this.node.read(key);
 };
 
 /**
@@ -388,41 +388,41 @@ Server.prototype.read = function(key) {
 var connections = [];
 
 Server.prototype.sendChordMessage = function(to, packet) {
-  var uri = util.format('ws://%s:%s/node/%s/receive', to.address, to.port, packet.message.id);
-  var host = util.format('ws://%s:%s', to.address, to.port);
-  var payload = {
-    message: packet.message,
-    from: packet.from
-  };
+    var uri = util.format('ws://%s:%s/node/%s/receive', to.address, to.port, packet.message.id);
+    var host = util.format('ws://%s:%s', to.address, to.port);
+    var payload = {
+        message: packet.message,
+        from: packet.from
+    };
 
-  // Connection cache
-  var connection = connections[host] || null;
+    // Connection cache
+    var connection = connections[host] || null;
 
-  if (ChordUtils.DebugServer)
-    console.info('send to ' + uri);
+    if (ChordUtils.DebugServer)
+        console.info('send to ' + uri);
 
-  if (connection) {
-    if (connection.connected) {
-      connection.sendUTF(JSON.stringify(payload));
-    } else {
-      delete connections[host];
+    if (connection) {
+        if (connection.connected) {
+            connection.sendUTF(JSON.stringify(payload));
+        } else {
+            delete connections[host];
+        }
+
+        return 0;
     }
 
-    return 0;
-  }
+    var client = new WebSocketClient();
 
-  var client = new WebSocketClient();
+    client.on('connect', function(connection) {
+        if (connection.connected) {
+            connection.sendUTF(JSON.stringify(payload));
+            connections[host] = connection;
+        } else {
+            delete connections[host];
+        }
+    });
 
-  client.on('connect', function(connection) {
-    if (connection.connected) {
-      connection.sendUTF(JSON.stringify(payload));
-      connections[host] = connection;
-    } else {
-      delete connections[host];
-    }
-  });
-
-  client.connect(uri, '');
+    client.connect(uri, '');
 };
 
 /**

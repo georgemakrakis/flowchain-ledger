@@ -1,5 +1,5 @@
 // Import the Flowchain library
-var Flowchain = require('../libs');
+var Flowchain = require('../../libs');
 
 // Import Websocket server
 var server = Flowchain.WoTServer;
