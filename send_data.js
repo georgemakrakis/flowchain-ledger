@@ -16,8 +16,11 @@ client.on('connect', function(connection) {
     connection.on('close', function() {
         console.log('echo-protocol Connection Closed');
     });
-    connection.on('message', function (message) {
-        console.log('------+++++--------'+message);
+    connection.on('message', function(message) {
+        let deserialize = JSON.parse(message.utf8Data);
+        let newMessage = {temperature: deserialize.temperature, timestampSend: deserialize.timestampSend,
+        timestampReceived: Date.now()};
+        console.log(newMessage);
     });
 
     //getFileReadyResponseTime();
@@ -53,12 +56,11 @@ client.on('connect', function(connection) {
             //     });
             // });
 
+
             limit++;
             setTimeout(sendNumber, 1000);
 
-            // connection.on('GOOOOOTTT_ITTTTT', function (GOT_IT_BACK) {
-            //         console.log('------+++++--------'+GOT_IT_BACK.data);
-            // });
+
         }
         else if(limit===10)
         {
