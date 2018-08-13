@@ -19,8 +19,16 @@ client.on('connect', function(connection) {
     connection.on('message', function(message) {
         let deserialize = JSON.parse(message.utf8Data);
         let newMessage = {temperature: deserialize.temperature, timestampSend: deserialize.timestampSend,
-        timestampReceived: Date.now()};
+            timestampReceived: Date.now()};
         console.log(newMessage);
+
+        //*******SECTION for Service Time - RTT*********
+        fs.appendFile('data_received_RTT', newMessage + '\n', function (err) {
+            if (err)
+            {
+                return console.log(err);
+            }
+        });
     });
 
     //getFileReadyResponseTime();
@@ -36,25 +44,6 @@ client.on('connect', function(connection) {
             console.log('[SEND]', JSON.stringify(obj));
 
             connection.sendUTF(JSON.stringify(obj));
-
-            //*******SECTION for Response Time*********
-            // fs.appendFile('data_send_ResponseTime', obj.temperature + ',' + Date.now() + '\n', function (err) {
-            //     if (err)
-            //     {
-            //         return console.log(err);
-            //     }
-            // });
-
-            //*******SECTION for Service Time - RTT*********
-            // client.on('RTT', function(connection) {
-            //     //*******SECTION for RTT*********
-            //     fs.appendFile('data_send_RTT', obj.temperature + ',' + Date.now() + '\n', function (err) {
-            //         if (err)
-            //         {
-            //             return console.log(err);
-            //         }
-            //     });
-            // });
 
 
             limit++;
@@ -74,20 +63,6 @@ client.on('connect', function(connection) {
 client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
 //client.connect('ws://192.168.1.2:8001/object/frontdoor/send', '');
 
-function getFileReadyResponseTime(){
-    fs.writeFile('data_published_responseTime', '', function (err) {
-        if (err)
-        {
-            return console.log(err);
-        }
-    });
-    fs.appendFile('data_published_responseTime', 'message_num,time_created' + '\n', function (err) {
-        if (err)
-        {
-            return console.log(err);
-        }
-    });
-}
 
 function getFileReadyRTT(){
     fs.writeFile('data_received_RTT', '', function (err) {

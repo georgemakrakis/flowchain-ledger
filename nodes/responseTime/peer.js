@@ -113,7 +113,7 @@ var onquery = function(req, res) {
 
         console.log('[Blockchain]', tx, 'is found at Block#' + block.no);
         //todo Here we must write the metrics to a file
-        fs.appendFile('data_received_peer', tx.temperature + ',' + Date.now() + '\n', function (err) {
+        fs.appendFile('data_received_responseTime', tx.temperature + ',' + Date.now() + '\n', function (err) {
             if (err)
             {
                 return console.log(err);
@@ -194,13 +194,13 @@ if (!module.parent)
     });
 
 function getFileReady(){
-    fs.writeFile('data_received_peer', '', function (err) {
+    fs.writeFile('data_received_responseTime', '', function (err) {
         if (err)
         {
             return console.log(err);
         }
     });
-    fs.appendFile('data_received_peer', 'message_num,time_created' + '\n', function (err) {
+    fs.appendFile('data_received_responseTime', 'message_num,time_received' + '\n', function (err) {
         if (err)
         {
             return console.log(err);

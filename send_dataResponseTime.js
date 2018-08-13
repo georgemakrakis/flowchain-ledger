@@ -16,15 +16,15 @@ client.on('connect', function(connection) {
     connection.on('close', function() {
         console.log('echo-protocol Connection Closed');
     });
-    connection.on('message', function(message) {
-        let deserialize = JSON.parse(message.utf8Data);
-        let newMessage = {temperature: deserialize.temperature, timestampSend: deserialize.timestampSend,
-        timestampReceived: Date.now()};
-        console.log(newMessage);
-    });
+    // connection.on('message', function(message) {
+    //     let deserialize = JSON.parse(message.utf8Data);
+    //     let newMessage = {temperature: deserialize.temperature, timestampSend: deserialize.timestampSend,
+    //         timestampReceived: Date.now()};
+    //     console.log(newMessage);
+    // });
 
-    //getFileReadyResponseTime();
-    getFileReadyRTT();
+    getFileReadyResponseTime();
+
     let limit = 0;
     function sendNumber() {
         if (connection.connected && limit!==10)
@@ -38,24 +38,12 @@ client.on('connect', function(connection) {
             connection.sendUTF(JSON.stringify(obj));
 
             //*******SECTION for Response Time*********
-            // fs.appendFile('data_send_ResponseTime', obj.temperature + ',' + Date.now() + '\n', function (err) {
-            //     if (err)
-            //     {
-            //         return console.log(err);
-            //     }
-            // });
-
-            //*******SECTION for Service Time - RTT*********
-            // client.on('RTT', function(connection) {
-            //     //*******SECTION for RTT*********
-            //     fs.appendFile('data_send_RTT', obj.temperature + ',' + Date.now() + '\n', function (err) {
-            //         if (err)
-            //         {
-            //             return console.log(err);
-            //         }
-            //     });
-            // });
-
+            fs.appendFile('data_published_responseTime', obj.temperature + ',' + Date.now() + '\n', function (err) {
+                if (err)
+                {
+                    return console.log(err);
+                }
+            });
 
             limit++;
             setTimeout(sendNumber, 1000);
@@ -82,21 +70,6 @@ function getFileReadyResponseTime(){
         }
     });
     fs.appendFile('data_published_responseTime', 'message_num,time_created' + '\n', function (err) {
-        if (err)
-        {
-            return console.log(err);
-        }
-    });
-}
-
-function getFileReadyRTT(){
-    fs.writeFile('data_received_RTT', '', function (err) {
-        if (err)
-        {
-            return console.log(err);
-        }
-    });
-    fs.appendFile('data_received_RTT', 'message_num,time_send,time_received' + '\n', function (err) {
         if (err)
         {
             return console.log(err);

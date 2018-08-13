@@ -174,7 +174,7 @@ WebsocketBroker.prototype.start = function (route, handlers) {
         });
 
 
-
+        //connection.on('message',onWsConnMessage);
         connection.on('message', function (message) {
             // Dispatching request message
             self.emit('data', {
