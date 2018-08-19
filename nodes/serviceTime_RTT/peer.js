@@ -95,7 +95,7 @@ var onmessage = function (req, res) {
     //     .update(key)
     //     .digest('hex');
     //
-    // var tx2 = {temperature: tx.temperature, timestampSend:tx.timestampSend, timestampReSend: Date.now()};
+    // var tx2 = {temperature: tx.messageNum, timestampSend:tx.timestampSend, timestampReSend: Date.now()};
     //
     // db.put(hash, tx2, function (err) {
     //     if (err)

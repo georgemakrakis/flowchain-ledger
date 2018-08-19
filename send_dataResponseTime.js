@@ -31,14 +31,14 @@ client.on('connect', function(connection) {
         {
             let number = Math.round(Math.random() * 0xFFFFFF);
             let lucky = Math.round(Math.random() * 100 + 1);
-            let obj = {temperature: lucky, timestampSend: Date.now()};
+            let obj = {messageNum: limit, timestampSend: Date.now()};
 
             console.log('[SEND]', JSON.stringify(obj));
 
             connection.sendUTF(JSON.stringify(obj));
 
             //*******SECTION for Response Time*********
-            fs.appendFile('data_published_responseTime', obj.temperature + ',' + Date.now() + '\n', function (err) {
+            fs.appendFile('data_published_responseTime', obj.messageNum + ',' + Date.now() + '\n', function (err) {
                 if (err)
                 {
                     return console.log(err);
@@ -59,8 +59,8 @@ client.on('connect', function(connection) {
     sendNumber();
 });
 
-client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
-//client.connect('ws://192.168.1.2:8001/object/frontdoor/send', '');
+//client.connect('ws://'+ip.address()+':8001/object/frontdoor/send', '');
+client.connect('ws://pl3gma.ddns.net:8001/object/frontdoor/send', '');
 
 function getFileReadyResponseTime(){
     fs.writeFile('data_published_responseTime', '', function (err) {

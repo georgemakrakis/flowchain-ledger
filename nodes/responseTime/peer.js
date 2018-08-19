@@ -113,7 +113,7 @@ var onquery = function(req, res) {
 
         console.log('[Blockchain]', tx, 'is found at Block#' + block.no);
         //todo Here we must write the metrics to a file
-        fs.appendFile('data_received_responseTime', tx.temperature + ',' + Date.now() + '\n', function (err) {
+        fs.appendFile('data_received_responseTime', tx.messageNum + ',' + Date.now() + '\n', function (err) {
             if (err)
             {
                 return console.log(err);

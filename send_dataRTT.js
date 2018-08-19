@@ -18,7 +18,7 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         let deserialize = JSON.parse(message.utf8Data);
-        let newMessage = {temperature: deserialize.temperature, timestampSend: deserialize.timestampSend,
+        let newMessage = {temperature: deserialize.messageNum, timestampSend: deserialize.timestampSend,
             timestampReceived: Date.now()};
         console.log(newMessage);
 
@@ -39,7 +39,7 @@ client.on('connect', function(connection) {
         {
             let number = Math.round(Math.random() * 0xFFFFFF);
             let lucky = Math.round(Math.random() * 100 + 1);
-            let obj = {temperature: lucky, timestampSend: Date.now()};
+            let obj = {messageNum: limit, timestampSend: Date.now()};
 
             console.log('[SEND]', JSON.stringify(obj));
 
