@@ -17,13 +17,13 @@ client.on('connect', function(connection) {
         console.log('echo-protocol Connection Closed');
     });
     connection.on('message', function(message) {
-        let deserialize = JSON.parse(message.utf8Data);
-        let newMessage = {temperature: deserialize.messageNum, timestampSend: deserialize.timestampSend,
-            timestampReceived: Date.now()};
-        console.log(newMessage);
+         let deserialize = JSON.parse(message.utf8Data);
+        //let newMessage = {messageNum: deserialize.messageNum, timestampSend: deserialize.timestampSend,
+        //    timestampReceived: Date.now()};
+        //console.log(newMessage);
 
         //*******SECTION for Service Time - RTT*********
-        fs.appendFile('data_received_RTT', newMessage + '\n', function (err) {
+        fs.appendFile('data_received_RTT', deserialize.messageNum + ','+ deserialize.timestampSend + ',' + Date.now() + '\n', function (err) {
             if (err)
             {
                 return console.log(err);
